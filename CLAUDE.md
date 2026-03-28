@@ -129,6 +129,17 @@ Steps 1–4 are **complete** for the baseline.
 
 The evaluation metric is **identification margin**: `sim(true_id) - max(sim(all_impostors))`. Higher is better for insertion; lower is better for deletion.
 
+## CRISE Results (tau=0.1)
+
+| Method | n_probes | Deletion AUC | Insertion AUC | Mean margin clean |
+|---|---|---|---|---|
+| RISE (baseline) | 1673 | 0.0337 | 0.2834 | 0.4134 |
+| CRISE (tau=0.1) | 1693 | **0.0128** | **0.3059** | 0.4137 |
+
+**Sanity checks:** CRISE insertion > RISE ✓ | CRISE deletion < RISE ✓
+
+**Stability (n=20 pairs, two seeds):** Mean cosine similarity = 0.9632, Std = 0.0112, Mean L1 = 0.1010 — maps are highly stable across seeds.
+
 ---
 
 ## Known Issues
@@ -151,24 +162,21 @@ In priority order:
 
 1. ~~Fix eval.ipynb bugs~~ — **Done**.
 
-2. **Refactor `Rise_Baseline.ipynb` → `rise.py`** — Extract the RISE loop into a module with the weighting function as a parameter, so CRISE is a clean extension, not a copy.
+2. ~~**Refactor `Rise_Baseline.ipynb` → `rise.py`**~~ — **Done.** RISE loop extracted into module with weighting function as parameter.
 
-3. **Implement `crise.py`** — Extend `rise.py` with softmax weighting:
-   ```python
-   sims = cosine_sim(f(x * m), G_all)   # shape (1680,)
-   w = softmax(sims / tau)[true_id_idx]  # tau=0.1 default
-   ```
-   Cache results to `results/crise_maps/`.
+3. ~~**Implement `crise.py`**~~ — **Done.** Softmax weighting (`tau=0.1`) implemented; maps cached to `results/crise_maps/`.
 
-4. **Unified eval: RISE vs. CRISE** — Run insertion/deletion on CRISE maps using the same margin metric. Include sanity checks (CRISE insertion AUC > RISE, deletion AUC < RISE) and a stability test (two seeds, compare map distance).
+4. ~~**Unified eval: RISE vs. CRISE**~~ — **Done.** Both sanity checks pass; stability confirmed (mean cosine = 0.963 across two seeds, n=20).
 
-5. **Synthetic probe generation** — Three methods, 50 identities per method, 3 probes per identity (~450 total). See Methodology Notes below.
+5. **Synthetic probe generation** — Three methods, 50 identities per method, 3 probes per identity (~450 total). See Methodology Notes below. **← CURRENT PRIORITY**
 
 6. **Run CRISE on synthetic probes** — Cache saliency maps to `results/crise_maps/` alongside real-probe maps.
 
 7. **Deepfake forensics analysis** — Four-case stratification (A/B/C/D), per-region importance profiles, saliency divergence metrics, 8+ figures. Core contribution. See Methodology Notes below.
 
-8. **(Extra) Digital validation for capstone demo** — Time permitting. See Methodology Notes below.
+8. **CRISE hyperparameter tuning** — Ablation over `tau ∈ [0.05, 0.1, 0.2, 0.5]` using insertion/deletion AUC on real probes. Report sensitivity table. Confirm tau=0.1 is optimal or update default. Run after synthetic probe analysis so tuning is informed by both real and synthetic performance.
+
+9. **(Extra) Digital validation for capstone demo** — Time permitting. See Methodology Notes below.
 
 ---
 

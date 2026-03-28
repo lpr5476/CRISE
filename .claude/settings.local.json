@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python3 -c \":*)"
+      "Bash(python3 -c \":*)",
+      "Bash(ls -la d:/Capstone/CRISE/*.ipynb)",
+      "Bash(find d:/Capstone/CRISE -type f -name *.py)",
+      "Bash(xargs grep:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)"
     ]
   }
 }
