@@ -263,6 +263,22 @@ def select_target_identities(
     return rng.sample(sorted(completed_ids), min(n, len(completed_ids)))
 
 
+def select_probes_for_identity(
+    identity: str,
+    exp_i: int,
+    split: dict,
+    n: int = N_PROBES_PER_ID,
+    seed: int = SYNTH_SEED,
+) -> list[str]:
+    """
+    Pick n probe images from the identity's own probe set (for SD img2img).
+    Deterministic given (exp_i, seed).
+    """
+    probes = sorted(split["probes"][identity])
+    rng = random.Random(seed * 1000 + exp_i)
+    return rng.sample(probes, min(n, len(probes)))
+
+
 def select_sources_for_target(
     target_id: str,
     exp_i: int,

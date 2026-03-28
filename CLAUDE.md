@@ -203,7 +203,7 @@ Using three methods lets you ask whether the forensic case distribution (A/B/C/D
 
 **Method 1 — InsightFace Face Swap:** Already in the stack. Affine warp + blend. Source: random probe from a different identity; Target: gallery image of true identity.
 
-**Method 2 — SimSwap (GAN-based):** Dedicated neural face swap with identity injection. Install via SimSwap GitHub repo. Same source/target convention. Produces different artifact signatures; expected to yield more Case A instances.
+**Method 2 — Stable Diffusion img2img (generative AI):** SD img2img recreates the probe image generatively. Source: real probe of the *true identity* (not a different person). The model synthesises a new face conditioned on the real probe at varying strength [0.3, 0.5, 0.7]. Tests whether the generative model preserves the identity features ArcFace relies on. SimSwap was originally planned here but its model weights were taken down from HuggingFace/all mirrors due to a licensing dispute (see: deepinsight/inswapper discussions/2). SD img2img is a cleaner scientific framing: rather than asking "does a face swap fool ArcFace?", it asks "does an AI-generated version of a real probe preserve ArcFace identity features?".
 
 **Method 3 — Face Morphing:** Pixel-level weighted blend using OpenCV. No generative model required. Primary analysis at blend ratio 0.5; secondary ablation at [0.3, 0.5, 0.7]. Directly relevant to morphing attacks documented in passport/border control FR literature.
 ```python
@@ -211,13 +211,16 @@ morph = cv2.addWeighted(target_gallery_img, alpha, source_img, 1 - alpha, 0)
 ```
 
 **Targets:** 50 identities × 3 probes × 3 methods = ~450 synthetic probes total.
+- Method 1: 150 probes (1 per source pair)
+- Method 2: 150 probes (1 per strength × probe, primary strength=0.5)
+- Method 3: 450 probes (3 alphas × 50 identities × 3 probes)
 
 **Cross-method comparison table** (primary new result):
 
 | Generation Method | Case A % | Case B % | Case C % | Case D % | Rank-1 Rate |
 |---|---|---|---|---|---|
 | InsightFace Swap | | | | | |
-| SimSwap | | | | | |
+| SD img2img (strength=0.5) | | | | | |
 | Face Morphing (α=0.5) | | | | | |
 
 ### Deepfake Forensics: Four-Case Stratification
