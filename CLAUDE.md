@@ -54,26 +54,35 @@ Images are 250×250 JPEGs. ArcFace operates on 112×112 aligned chips produced b
 
 ```
 CRISE/
-├── data_prep.ipynb          # Build gallery/probe split from LFW
-├── embedding.ipynb          # ArcFace embeddings for gallery + all probes
-├── Rise_Baseline.ipynb      # Vanilla RISE saliency (aligned-chip, N=1000)
-├── eval.ipynb               # Insertion/deletion evaluation (margin-based AUC)
-├── RESEARCH_NOTES.md        # Full design spec — read before implementing anything
+├── data_prep.ipynb               # Build gallery/probe split from LFW
+├── embedding.ipynb               # ArcFace embeddings for gallery + all probes
+├── Rise_Baseline.ipynb           # Vanilla RISE saliency (aligned-chip, N=1000)
+├── crise_run.ipynb               # Run CRISE on real probes
+├── eval.ipynb                    # Insertion/deletion evaluation (margin-based AUC)
+├── synth_probe_insightface.ipynb # Method 1: affine swap generation
+├── synth_probe_sd_img2img.ipynb  # Method 2: SD img2img generation
+├── synth_probe_morphing.ipynb    # Method 3: face morphing generation
+├── synth_crise_run.ipynb         # Run CRISE on synthetic probes
+├── forensics_analysis.ipynb      # Deepfake forensics: A/B/C/D classification + figures
+├── rise.py                       # RISE core module
+├── crise.py                      # CRISE softmax extension (TAU=0.1)
+├── synth_gen.py                  # Shared synthetic probe utilities
+├── RESEARCH_NOTES.md             # Full design spec — read before implementing anything
 │
-├── data/
-│   ├── lfw-deepfunneled/    # Raw LFW images (13,233 JPEGs)
-│   ├── *.csv                # Original LFW metadata files
-│   └── synthetic_probes/    # (not yet created)
+├── data/                         # ALL raw inputs and generated images live here
+│   ├── lfw-deepfunneled/         # Raw LFW images (13,233 JPEGs)
+│   ├── *.csv                     # Original LFW metadata files
+│   └── synthetic_probes/         # Generated synthetic probe images
 │       ├── insightface_swap/
 │       │   └── {identity}/{identity}_swap_{i}.jpg
-│       ├── simswap/
-│       │   └── {identity}/{identity}_simswap_{i}.jpg
+│       ├── sd_img2img/
+│       │   └── {identity}/{identity}_sdimg2img_{strength}_{i}.jpg
 │       ├── morphing/
 │       │   └── {identity}/{identity}_morph_{alpha}_{i}.jpg
-│       └── metadata.csv     # All methods; columns: identity, generation_method,
-│                            # source_identity, blend_alpha, output_path,
-│                            # embedding_ok, arcface_similarity, rank1_match,
-│                            # saliency_cosine_sim, saliency_l1, case_label
+│       └── metadata.csv          # All methods; columns: identity, generation_method,
+│                                 # source_identity, blend_alpha, output_path,
+│                                 # embedding_ok, arcface_similarity, rank1_match,
+│                                 # saliency_cosine_sim, saliency_l1, case_label
 │
 ├── splits/
 │   └── lfw_1N_split.json    # Gallery + probe assignments (seed=123)
@@ -85,20 +94,25 @@ CRISE/
 │   ├── probe_meta.json      # Per-probe: true_id, img_path, ok flag
 │   └── probe_cache_state.json  # Resume state (idx=7484, complete)
 │
-└── results/
+└── results/                 # ALL analysis outputs live here (never under data/)
     ├── baseline_arcface_lfw_1N.json          # Rank-1/5 accuracy
     ├── rise_alignedchip_baseline/            # Early single-probe cosine runs (ignore)
     │   └── rise_baseline_cosine_N{n}_*.npy/json
-    └── rise_alignedchip_baseline_multi/
-        ├── *_saliency_norm.npy               # 1674 completed saliency maps
-        ├── *_sal_accum.npy                   # Intermediate accumulators
-        ├── *_state.json                      # Per-probe resume state
-        ├── summary_K5_N1000_s8_p0.5_MASTERSEED123.csv  # Per-probe summary
-        ├── figures/                          # Chip/saliency/overlay PNGs per probe
-        │   └── {id}_N1000_s8_p0.5_{chip|saliency|overlay}.png
-        ├── eval_margin_auc_multi/
-        │   └── eval_margin_auc_multi_steps50_black.csv  # Full AUC results
-        └── margin_eval/                      # Early 5-probe test run — ignore
+    ├── rise_alignedchip_baseline_multi/      # ← Rise_Baseline.ipynb output
+    │   ├── *_saliency_norm.npy               # 1674 completed saliency maps
+    │   ├── *_sal_accum.npy                   # Intermediate accumulators
+    │   ├── *_state.json                      # Per-probe resume state
+    │   ├── summary_K5_N1000_s8_p0.5_MASTERSEED123.csv  # Per-probe summary
+    │   ├── figures/                          # Chip/saliency/overlay PNGs per probe
+    │   ├── eval_margin_auc_multi/
+    │   │   └── eval_margin_auc_multi_steps50_black.csv
+    │   └── margin_eval/                      # Early 5-probe test run — ignore
+    ├── crise_maps/                           # ← crise_run.ipynb + synth_crise_run.ipynb
+    │   ├── *_saliency_norm.npy               # Real + synthetic probe saliency maps
+    │   ├── summary_crise_tau0.1_N1000_s8_p0.5_MASTERSEED123.csv
+    │   ├── synth_saliency_index.csv          # output_path → saliency_path for synthetics
+    │   └── eval_margin_auc/
+    └── forensics_figures/                    # ← forensics_analysis.ipynb output
 ```
 
 ---
