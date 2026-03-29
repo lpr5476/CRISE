@@ -168,9 +168,9 @@ In priority order:
 
 4. ~~**Unified eval: RISE vs. CRISE**~~ — **Done.** Both sanity checks pass; stability confirmed (mean cosine = 0.963 across two seeds, n=20).
 
-5. **Synthetic probe generation** — Three methods, 50 identities per method, 3 probes per identity (~450 total). See Methodology Notes below. **← CURRENT PRIORITY**
+5. ~~**Synthetic probe generation**~~ — **Done.** 150 insightface swap + 150 SD img2img + 450 morphing probes generated on remote server. `data/synthetic_probes/metadata.csv` is source of truth.
 
-6. **Run CRISE on synthetic probes** — Cache saliency maps to `results/crise_maps/` alongside real-probe maps.
+6. **Run CRISE on synthetic probes** — Cache saliency maps to `results/crise_maps/` alongside real-probe maps. **← CURRENT PRIORITY**
 
 7. **Deepfake forensics analysis** — Four-case stratification (A/B/C/D), per-region importance profiles, saliency divergence metrics, 8+ figures. Core contribution. See Methodology Notes below.
 
