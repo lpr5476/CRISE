@@ -190,7 +190,7 @@ In priority order:
 
 8. **CRISE hyperparameter tuning** — Ablation over `tau ∈ [0.05, 0.1, 0.2, 0.5]` using insertion/deletion AUC on real probes. Report sensitivity table. Confirm tau=0.1 is optimal or update default. Run after synthetic probe analysis so tuning is informed by both real and synthetic performance.
 
-9. **(Extra) Digital validation for capstone demo** — Time permitting. See Methodology Notes below.
+9. **Capstone demo** — Three files built: `demo_digital_validation.ipynb` (Path A pixel perturbation, 4 conditions), `demo_personal.ipynb` (enroll yourself + printable patch), `demo_live.py` (live webcam ArcFace system). **← CURRENT**
 
 ---
 
