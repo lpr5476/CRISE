@@ -16,7 +16,7 @@ Build **CRISE-ID** (Contrastive RISE for Identification), a forensic auditing to
 
 **Research paper (primary deliverable):** The two contributions above. Concludes that face recognition systems cannot be trusted in forensic/legal contexts because they can be fooled by deepfakes that don't replicate genuine identity features, and this failure is invisible without explainability tools like CRISE-ID.
 
-**Capstone demo (separate deliverable, not in the paper):** A physical adversarial patch — a printable occlusion pattern derived from CRISE saliency maps targeting high-saliency facial regions for a specific identity — demonstrated live against a running ArcFace system. The paper references this in one future work paragraph only.
+**Capstone demo (separate deliverable, not in the paper):** A personal digital forensics demo — enroll your own face, run CRISE-ID, and produce a four-panel forensics report showing which facial regions ArcFace relies on to identify you (saliency overview, per-region importance, deletion experiment, cross-probe consistency). The paper references this in one future work paragraph only.
 
 > **Future work paragraph (use verbatim or adapt):** CRISE-ID saliency maps directly identify the facial regions a recognition system depends on per identity. A natural extension is translating these maps into physical adversarial patches — printable occlusions targeting the exact high-saliency regions identified for a given individual. Preliminary experiments suggest this approach is viable as a principled privacy countermeasure grounded in model-specific decision evidence, and we leave rigorous evaluation of physical-world patch effectiveness to future work.
 
@@ -188,9 +188,11 @@ In priority order:
 
 7. **Deepfake forensics analysis** — Four-case stratification (A/B/C/D), per-region importance profiles, saliency divergence metrics, 8+ figures. Core contribution. See Methodology Notes below.
 
-8. **CRISE hyperparameter tuning** — Ablation over `tau ∈ [0.05, 0.1, 0.2, 0.5]` using insertion/deletion AUC on real probes. Report sensitivity table. Confirm tau=0.1 is optimal or update default. Run after synthetic probe analysis so tuning is informed by both real and synthetic performance.
+8. **Demographic saliency analysis** — New experiment using existing real-probe CRISE maps. Run InsightFace's built-in gender/age estimator on gallery images (already in `buffalo_l`), split 1,680 CRISE maps by estimated gender (and optionally age bracket), compute mean per-region importance per group using the 5-zone framework, compare profiles. Requires zero new saliency computation. See Societal Impact section below.
 
-9. **Capstone demo** — Three files built: `demo_digital_validation.ipynb` (Path A pixel perturbation, 4 conditions), `demo_personal.ipynb` (enroll yourself + printable patch), `demo_live.py` (live webcam ArcFace system). **← CURRENT**
+9. **CRISE hyperparameter tuning** — Ablation over `tau ∈ [0.05, 0.1, 0.2, 0.5]` using insertion/deletion AUC on real probes. Report sensitivity table. Confirm tau=0.1 is optimal or update default. Run after synthetic probe analysis so tuning is informed by both real and synthetic performance.
+
+10. **Capstone demo** — `demo_personal.ipynb` (enroll yourself + 4-panel forensics report: saliency overview, per-region importance, deletion experiment, cross-probe consistency). Framing: informational asymmetry — the system knows which parts of your face it owns; you don't; CRISE-ID closes that gap. **← CURRENT**
 
 ---
 
@@ -257,6 +259,25 @@ Every synthetic probe is classified on two binary axes (fooled ArcFace? / CRISE 
 **Per-region analysis:** Break each map into 5 zones via InsightFace 5-point landmarks (eye zone, nose zone, mouth zone, jaw/chin, forehead/upper face). Report mean fractional saliency weight per region per case. Expected for Case B: elevated weight in skin texture, hairline, or background.
 
 **Divergence metrics per real/synthetic pair:** cosine distance (flattened maps), L1 distance, per-region importance divergence. Visual inspection: 2+ examples per case (8 figures minimum).
+
+### Societal Impact Contributions
+
+Two distinct societal contributions, both grounded in CRISE-ID saliency analysis:
+
+**Contribution 1 — Deepfake Forensics (already in paper):**
+ArcFace can be fooled by deepfakes that do not replicate genuine identity features (Case B). This failure is invisible from confidence scores alone — it requires saliency-level analysis. Direct implication: FR systems cannot be trusted in forensic/legal contexts without explainability tools.
+
+**Contribution 2 — Demographic Saliency Bias (capstone experiment):**
+The question: does ArcFace rely on different facial regions for different demographic groups? Method: run InsightFace's built-in gender/age estimator on the 1,680 gallery images, split existing CRISE maps by group, compute mean per-region importance (5-zone framework) per group, compare profiles. Zero new saliency computation needed. Expected finding: the system may over-rely on skin texture (forehead/jaw) for one group and geometric landmarks (eye zone/nose) for another — structural bias in feature extraction, not just accuracy bias. This answers *why* FR systems are biased, not just *that* they are.
+
+**Combined conclusion:** You cannot trust or audit face recognition systems without an explainability layer. CRISE-ID provides that layer and reveals two previously invisible failure modes.
+
+**Out of scope for capstone:** Cross-system comparison (FaceNet vs. ArcFace — needs new infrastructure), legal expert witness framing (needs a real case), EU AI Act compliance tooling (needs productization).
+
+**Capstone demo framing — informational asymmetry:**
+When you enroll in a FR system, the system knows which parts of your face it owns. You don't. CRISE-ID closes that gap. Live demo narrative: *"I enrolled in this system. Here is the audit of what it knows about me that I didn't know before running this tool."* This is the civil liberties argument made concrete and personal.
+
+---
 
 ### Path A: Digital Validation (Extra — Supports Capstone Demo, Not in Paper)
 

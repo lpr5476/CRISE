@@ -15,9 +15,15 @@ Two clean contributions:
 The paper concludes that face recognition systems cannot be trusted in legal or forensic contexts because (a) they can be fooled by deepfakes that do not even replicate genuine identity features, and (b) the failure modes are invisible without explainability tools like CRISE-ID.
 
 ### Capstone Demo (separate deliverable, not in paper)
-A physical adversarial patch -- a printable occlusion pattern derived from CRISE saliency maps targeting the exact high-saliency facial regions identified for a specific identity -- demonstrated live against a running ArcFace system. This is the visceral payoff for the paper's abstract findings: holding a printout to your face and disappearing from a live FR system.
+A personal digital forensics demonstration using `demo_personal.ipynb`. Enroll your own face, run CRISE-ID, and produce a four-panel forensics report:
+- **Panel A** — Saliency overview (chip / map / overlay per probe + mean)
+- **Panel B** — Per-region importance (5 anatomical zones, fractional saliency mass)
+- **Panel C** — Deletion experiment (recognition confidence vs. % of most-salient pixels masked; 3 conditions: CRISE-guided, random, reverse-CRISE)
+- **Panel D** — Cross-probe consistency (pairwise cosine similarity across your probe maps)
 
-The paper references this in future work with one paragraph. It does not need to be implemented or evaluated for the paper to be complete.
+**Framing — informational asymmetry:** When you enroll in a FR system, the system knows which parts of your face it owns. You don't. CRISE-ID closes that gap. Live demo narrative: *"I enrolled in this system. Here is the audit of what it knows about me that I didn't know before running this tool."* This is the civil liberties argument made concrete and personal.
+
+The paper references the broader implications in future work with one paragraph.
 
 ### Future Work Paragraph (use verbatim or adapt)
 > CRISE-ID saliency maps directly identify the facial regions a recognition system depends on per identity. A natural extension is translating these maps into physical adversarial patches -- printable occlusions targeting the exact high-saliency regions identified for a given individual. Preliminary experiments suggest this approach is viable as a principled privacy countermeasure grounded in model-specific decision evidence, and we leave rigorous evaluation of physical-world patch effectiveness to future work.
@@ -227,6 +233,43 @@ If the experiment works as designed, you can make the following claims:
 
 ---
 
+## Demographic Saliency Analysis (New Capstone Experiment)
+
+### Research Question
+Does ArcFace rely on different facial regions for different demographic groups?
+
+### Method
+1. Run InsightFace's built-in gender/age estimator on the 1,680 gallery images — these attributes are produced by `buffalo_l` alongside detection; they have just not been used yet
+2. Split the existing real-probe CRISE saliency maps by estimated gender (and optionally by age bracket: <35, 35–55, 55+)
+3. Compute mean per-region importance profile for each group using the 5-zone framework: Forehead, Eye zone, Nose, Mouth, Jaw/chin
+4. Compare profiles across groups — both as bar charts and as significance tests (Mann-Whitney U or permutation test on per-region fractions)
+
+**Zero new saliency computation required.** Uses the 1,680+ maps already cached in `results/crise_maps/`.
+
+### Expected Finding
+The system may over-rely on skin texture regions (forehead, jaw) for one group and on geometric landmark regions (eye zone, nose) for another. If confirmed, this is structural bias in feature extraction — not just an accuracy disparity, but evidence the model uses a fundamentally different decision basis across groups.
+
+### Why This Matters
+Current bias research in FR reports accuracy gaps (e.g. "5% higher error rate for Group X"). CRISE-ID goes one level deeper: *why* is the error rate higher? If the model relies on less stable or less geometrically grounded regions for a given group, the accuracy gap has a mechanistic explanation. That is a much stronger and more actionable finding.
+
+### Societal Framing
+This is the second invisible failure mode: not just that deepfakes can fool the system without replicating identity features, but that the system uses different evidence standards for different people. Both are invisible from confidence scores alone. Both require CRISE-ID to detect.
+
+### Combined Conclusion for Capstone
+Two distinct societal contributions:
+1. **Deepfake forensics** — FR can be fooled without replicating genuine identity features (Case B); invisible without saliency analysis
+2. **Demographic bias** — FR relies on structurally different facial evidence for different demographic groups; invisible without saliency analysis
+
+Both failures share the same root: you cannot trust or audit these systems without an explainability layer. CRISE-ID provides that layer.
+
+### Output
+- Mean per-region importance bar chart per gender group (side-by-side)
+- Significance table (per-region p-values)
+- Sample saliency maps from each group to support qualitative claims
+- One paragraph in paper conclusions or future work if finding is strong enough
+
+---
+
 ## Path A: Digital Validation (Extra -- Time Permitting, Supports Capstone Demo)
 
 Not required for the paper. If time permits, this provides the digital validation step that grounds the capstone demo. The demo itself is built separately after the paper is complete.
@@ -245,35 +288,35 @@ Use CRISE saliency maps to identify the highest-importance pixels for a set of p
 
 ---
 
-## Capstone Demo Prep (Separate from Paper -- Build After Submission)
+## Capstone Demo Prep (Separate from Paper -- demo_personal.ipynb)
 
 ### Goal
-A live demonstration where a printed pattern held in front of your face causes a running ArcFace system to fail to identify you. The pattern is derived directly from CRISE saliency, not designed by intuition.
+A live forensics demonstration using your own enrolled face. The narrative: informational asymmetry — the FR system knows which parts of your face it owns; you don't; CRISE-ID reveals that.
 
 ### Steps
-1. Add yourself as an enrolled identity: take 5-10 photos of your face, add one to the gallery, use the rest as probes
-2. Run CRISE on your probes to generate your personal saliency map
-3. Identify your top-k salient regions (expected: eye zone, nose bridge)
-4. Design an occlusion pattern targeting those regions -- can be as simple as colored patches or as complex as a printed mask
-5. Validate digitally: apply the occlusion to your probe images and confirm rank-1 identification drops
-6. Print, wear, demo live against a webcam running ArcFace
+1. Place 5-10 photos of your face in `data/demo_identity/{YOUR_NAME}/`
+2. Set `YOUR_NAME` in `demo_personal.ipynb` config cell and run top to bottom
+3. The notebook produces four forensics panels automatically (see Capstone Demo section above)
+4. Present Panel C (deletion experiment) live: show recognition breaking as most-salient pixels are progressively masked
 
 ### What makes this compelling
-The patch is personalized and model-derived. You are not guessing which regions to cover -- CRISE told you exactly which regions this specific model relies on for your specific face. That is the point of the whole paper, made tangible.
+The forensics report is personalized. You are not showing an abstract result from LFW — CRISE-ID is auditing which parts of *your* face *this specific model* relies on, in real time, against a gallery of 1,681 identities. That is the accountability argument made personal.
 
 ---
 
 ## Implementation Order
 
-1. Fix known bugs in eval.ipynb (substring matching issue, zero gallery embeddings)
-2. Refactor rise_baseline.ipynb into rise.py module (weighting function as parameter)
-3. Implement crise.py extending rise.py with softmax weighting
-4. Run CRISE on 1597 probes, cache results to results/crise_maps/
-5. Unified eval: RISE vs CRISE insertion/deletion side by side, sanity checks, stability test
-6. Generate synthetic probes: 3-5 per identity, 50-100 identities, metadata CSV
-7. Run CRISE on synthetic probes, cache saliency maps
+1. Fix known bugs in eval.ipynb (substring matching issue, zero gallery embeddings) ✓
+2. Refactor rise_baseline.ipynb into rise.py module (weighting function as parameter) ✓
+3. Implement crise.py extending rise.py with softmax weighting ✓
+4. Run CRISE on 1597 probes, cache results to results/crise_maps/ ✓
+5. Unified eval: RISE vs CRISE insertion/deletion side by side, sanity checks, stability test ✓
+6. Generate synthetic probes: 3-5 per identity, 50-100 identities, metadata CSV ✓
+7. Run CRISE on synthetic probes, cache saliency maps  ← current
 8. Deepfake forensics analysis: four-case stratification, per-region importance, saliency divergence metrics, figures
-9. (Extra) Path A: four-condition perturbation experiment if time permits
+9. Demographic saliency analysis: gender/age estimation on gallery, split existing maps, per-region comparison across groups, significance tests
+10. Capstone demo: run demo_personal.ipynb with personal photos, present four forensics panels live
+11. (Extra) Path A: four-condition perturbation experiment if time permits
 
 ---
 
@@ -298,3 +341,5 @@ The patch is personalized and model-derived. You are not guessing which regions 
 - The paper's closing argument: ArcFace can be fooled by deepfakes that do not even replicate genuine identity features, and this is invisible without explainability tools -- therefore FR systems cannot be trusted in legal or forensic contexts
 - Future work paragraph is already written above -- use it verbatim or adapt, one paragraph only, do not over-promise on the physical demo
 - Frame the overall contribution as: CRISE-ID is a forensic auditing tool that reveals why face recognition systems succeed or fail, including under adversarial synthetic inputs
+- If the demographic analysis produces a strong finding, add one paragraph to the paper conclusion or future work section: "Beyond deepfake forensics, CRISE-ID reveals that ArcFace relies on structurally different facial evidence for different demographic groups — a form of bias that confidence scores cannot expose."
+- The two societal contributions share the same conclusion: FR systems cannot be trusted or audited without an explainability layer. CRISE-ID provides that layer and reveals two previously invisible failure modes.

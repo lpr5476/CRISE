@@ -6,7 +6,13 @@
       "Bash(find d:/Capstone/CRISE -type f -name *.py)",
       "Bash(xargs grep:*)",
       "WebSearch",
-      "WebFetch(domain:github.com)"
+      "WebFetch(domain:github.com)",
+      "Bash(python -c \"import json; d=json.load\\(open\\(''cache/probe_meta.json''\\)\\); print\\(list\\(d.items\\(\\)\\)[:2]\\)\")",
+      "Bash(python -c \"import json; d=json.load\\(open\\(''splits/lfw_1N_split.json''\\)\\); print\\(list\\(d.keys\\(\\)\\)\\); print\\(list\\(d[''gallery''].items\\(\\)\\)[:3]\\)\")",
+      "Bash(python -c \"import json; d=json.load\\(open\\(''cache/probe_meta.json''\\)\\); items=list\\(d.items\\(\\)\\); print\\(items[:2]\\)\")",
+      "Bash(python -c \"import json; d=json.load\\(open\\(''splits/lfw_1N_split.json''\\)\\); print\\(list\\(d.keys\\(\\)\\)\\); print\\(list\\(d.items\\(\\)\\)[:2]\\)\")",
+      "Bash(dir results:*)",
+      "Bash(dir cache:*)"
     ]
   }
 }
