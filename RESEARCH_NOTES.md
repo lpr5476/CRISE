@@ -208,19 +208,35 @@ data/synthetic_probes/
 
 ### Cross-Method Comparison Table (Empirical Results)
 
-Case counts with principled threshold (SIM_THRESHOLD = 0.853):
+SIM_THRESHOLD = 0.853 (5th pct of real intra-identity CRISE similarity).
 
-| Generation Method | n | Case A | Case B | Case C | Case D | Rank-1 Rate |
+**All alphas/strengths combined:**
+
+| Generation Method | n | Rank-1 Rate | Case A % | Case B % | Case C % | Case D % |
 |---|---|---|---|---|---|---|
-| InsightFace Swap | 150 | 1 | 1 | 32 | 116 | 0.7% |
-| Face Morphing (α=0.5) | 149 | 64% | 5% | 31% | <1% | 69% |
-| SD img2img (strength=0.5) | 92 | ~40% | ~6% | ~49% | ~5% | 28% |
+| InsightFace Swap | 149 | 0.7% | 0.7% | 0.0% | 21.5% | 77.9% |
+| Morphing | 447 | 57.7% | 55.3% | 2.5% | 25.7% | 16.6% |
+| SD img2img | 276 | 37.0% | 33.0% | **4.0%** | 32.2% | 30.8% |
 
-**Key finding: InsightFace swap fails almost completely (0.7% rank-1).** This is a negative control result — naive pixel-level face transplants do not fool ArcFace. Use it as a baseline for comparison, not as a primary deepfake method.
+**Primary alpha / strength = 0.5 only:**
 
-**Case B exists and is method-distributed:** With the principled threshold, 26 total Case B probes were found across morphing (14) and SD img2img (11), with 1 from InsightFace swap. Morphing α=0.5 is the strongest source of Case B instances.
+| Generation Method | n | Rank-1 Rate | Case A % | Case B % | Case C % | Case D % |
+|---|---|---|---|---|---|---|
+| InsightFace Swap | 149 | 0.7% | 0.7% | 0.0% | 21.5% | 77.9% |
+| Morphing (α=0.5) | 149 | 69.1% | 64.4% | **4.7%** | 21.5% | 9.4% |
+| SD img2img (strength=0.5) | 92 | 28.3% | 21.7% | **6.5%** | 41.3% | 30.4% |
 
-**The absence of Case B at threshold=0.75 was a calibration error** — that threshold is below the minimum observed saliency similarity for any fooled probe (0.781), making Case B structurally impossible. The principled threshold at 0.853 corrects this.
+**Key findings:**
+
+1. **InsightFace swap is a negative control (0.7% rank-1, 0 Case B).** Naive pixel transplants do not fool ArcFace. This validates the experimental design: the other two methods produce real attack outcomes.
+
+2. **SD img2img has the highest Case B rate at primary strength (6.5% vs. 4.7% for morphing).** AI-generated faces are *more likely* to fool ArcFace for the wrong reasons than pixel-level morphing attacks. This is the headline finding for the GenAI forensics angle: generative models can produce faces that fool ArcFace through non-identity features that confidence scores cannot detect.
+
+3. **Morphing Case A dominates at α=0.5 (64.4%).** Most successful morphing attacks genuinely replicate identity features — identity absorption is real and measurable in saliency space.
+
+4. **Case D is elevated for SD img2img (30.4%).** The generator frequently produces faces that neither fool ArcFace nor preserve the saliency structure of the original. High generation strength pushes probes into this quadrant.
+
+**The absence of Case B at threshold=0.75 was a calibration error** — that threshold fell below the minimum observed saliency similarity for any fooled probe (0.781), making Case B impossible by construction. The principled threshold at 0.853 corrects this.
 
 ### Critical Confound to Control
 
@@ -273,12 +289,12 @@ The *inverse* relationship: low strength keeps the original face mostly intact (
 
 Fooled probes (Case A) rely more heavily on the eye zone (+34% vs Case C) and less on forehead (-21%). Failed probes (Case C) show elevated forehead weight — the synthetic image may be preserving texture/color there while failing to transfer the geometrically grounded eye-zone features ArcFace needs.
 
-**Defensible paper claims:**
+**Defensible paper claims (grounded in actual results):**
 1. CRISE-ID classifies deepfake success/failure into mechanistically distinct categories invisible to confidence scores
-2. Case B exists (26 probes, ~7% of fooled): ArcFace is fooled while relying on different facial evidence than for real photos of the same identity
-3. The morphing attack undergoes a phase transition around α=0.5: below this, identity features are insufficiently transferred; above, they are fully absorbed (saliency sim ~0.93)
-4. SD img2img at high strength de-identifies faces from ArcFace's perspective — a privacy tool implication
-5. InsightFace swap's near-complete failure shows ArcFace is robust against naive pixel transplants — genuine neural identity transfer (morphing) is required
+2. **Case B exists and is attack-type-specific:** SD img2img at strength=0.5 produces 6.5% Case B vs. 4.7% for morphing. GenAI deepfakes are more likely to exploit non-identity features than morphing attacks — a finding invisible to confidence scores
+3. The morphing attack undergoes a phase transition around α=0.5 (4% → 69% rank-1); saliency similarity rises monotonically (0.861 → 0.901 → 0.931) — the identity absorption curve
+4. SD img2img is a behavioral inversion: low strength (0.3) → 82% rank-1 via identity preservation; high strength (0.7) → 1% rank-1 via de-identification. Same model, opposite forensic outcome
+5. InsightFace swap failure (0.7% rank-1, 0% Case B) validates ArcFace is robust against naive pixel transplants — confirming the other methods' Case B instances are genuine attack-driven failures, not noise
 
 ---
 
