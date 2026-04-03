@@ -20,9 +20,9 @@ Two tightly coupled contributions:
 
 ## Project Figure
 
-![Cross-Method Case Distribution](results/forensics_figures/fig2_cross_method_cases.png)
+![Insertion and Deletion Curves — RISE vs CRISE](results/crise_maps/eval_margin_auc/rise_vs_crise_curves_black.png)
 
-*Figure: Deepfake forensics case distribution across three synthetic probe generation methods. Case B (fooled ArcFace, saliency divergent) appears in both face morphing (4.7%) and SD img2img (6.5%), providing direct evidence that ArcFace can be spoofed without replicating genuine identity features.*
+*Figure: Insertion (higher = better) and deletion (lower = better) AUC curves comparing vanilla RISE against CRISE-ID (τ=0.1), evaluated on identification margin across 1,673+ probes. CRISE-ID achieves lower deletion AUC (0.0128 vs 0.0337) and higher insertion AUC (0.3059 vs 0.2834), confirming its saliency maps are more faithful to the 1:N decision boundary.*
 
 **Additional key figures:**
 
