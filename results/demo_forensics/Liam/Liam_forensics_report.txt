@@ -1,0 +1,20 @@
+============================================================
+ CRISE-ID FORENSICS REPORT — Liam
+============================================================
+  Gallery size           : 1681 identities
+  Probe images analyzed  : 3
+  CRISE params           : N=1000, s=8, p=0.5, tau=0.1
+
+IDENTITY VERIFICATION
+  ArcFace similarity     : 0.754 ± 0.044
+  Rank-1 correct         : 3/3
+
+SALIENCY — REGION BREAKDOWN
+  Eye zone        0.284
+  Forehead        0.233
+  Nose            0.142
+  Mouth           0.129
+  Jaw/chin        0.099
+
+CROSS-PROBE STABILITY
+  Mean pairwise cosine sim: 0.947 ± 0.010
